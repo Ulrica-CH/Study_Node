@@ -1,9 +1,11 @@
+const walk = require("../../../basic/AST/walk.js");
 module.exports = function (ast, code, module) {
   ast.body.forEach((statement) => {
     Object.defineProperties(statement, {
       _included: { value: false, writable: true },
       _module: { value: module },
       _source: { value: code.snip(statement.start, statement.end) },
+      _dependsOn: { value: {},writable: true ,enumerable: false, configurable: true},
     });
     // 收集imports
     if (statement.type === "ImportDeclaration") {
@@ -25,7 +27,23 @@ module.exports = function (ast, code, module) {
         });
       }
     }
-    console.log(module.imports,module.exports);
+    console.log(module.imports, module.exports);
+
+    
   });
+  // 第二轮循环
+    //  判断用到了哪些变量
+    ast.body.forEach((statement) => {
+      walk(statement, {
+        enter: (node) => {
+          if (node.type === "Identifier") {
+            // console.log(statement,statement._dependsOn)
+            statement._dependsOn[node.name] = true;
+          }
+        },
+      });
+
+      console.log("statement", statement._dependsOn);
+    });
   // console.log(ast.body);
 };
