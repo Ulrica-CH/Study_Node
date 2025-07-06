@@ -13,9 +13,11 @@ class Module {
     });
     this.imports = {}
     this.exports = {}
+    this.definitions = {}
 
     // 遍历处理AST
     analyze(this.ast, this.code, this);
+    console.log('this.definitions',this.definitions)
   }
   expandAllStatements() {
     let allStatements = [];
