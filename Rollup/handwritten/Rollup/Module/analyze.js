@@ -1,5 +1,5 @@
 const walk = require("../../../basic/AST/walk.js");
-const Scope = require("../../../basic/Scope/Scope.js");
+const Scope = require("../../../basic/scope/Scope.js");
 module.exports = function (ast, code, module) {
   ast.body.forEach((statement) => {
     Object.defineProperties(statement, {
@@ -50,16 +50,17 @@ module.exports = function (ast, code, module) {
     scopes: [],
     parent: null,
   });
-  const addToScope = (name) => {
-    currentScope.add(name); //把name变量放入当前的作用域
-    //如果没有父亲，相当 于就是根作用域或者 当前的作用域是一个块级作用域的话
-    if (!currentScope.parent) {
-      //如果没有父作用域，说明这是一个顶级作用域
-      statement._defines[name] = true; //在一级节点定义一个变量name _defines.say=true
-      module.definitions[name] = statement;
-    }
-  };
+  
   ast.body.forEach((statement) => {
+    const addToScope = (name) => {
+      currentScope.add(name); //把name变量放入当前的作用域
+      //如果没有父亲，相当 于就是根作用域或者 当前的作用域是一个块级作用域的话
+      if (!currentScope.parent) {
+        //如果没有父作用域，说明这是一个顶级作用域
+        statement._defines[name] = true; //在一级节点定义一个变量name _defines.say=true
+        module.definitions[name] = statement;
+      }
+    };
     walk(statement, {
       enter: (node) => {
         if (node.type === "Identifier") {
@@ -91,11 +92,13 @@ module.exports = function (ast, code, module) {
         }
       },
       leave: (node) => {
-        currentScope = currentScope.parent;
+        if (Object.hasOwnProperty(node, "_scope")) {
+          currentScope = currentScope.parent;
+        }
       },
     });
 
-    // console.log("statement", statement._dependsOn);
+    console.log("statement", statement._defines);
   });
   // console.log(ast.body);
 };
