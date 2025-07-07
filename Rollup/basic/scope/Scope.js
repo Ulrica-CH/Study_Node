@@ -5,7 +5,7 @@ class Scope {
     this.scopes = options.scopes;
   }
 
-  addScope(scope) {
+  add(scope) {
     this.scopes.push(scope);
   }
 
