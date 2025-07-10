@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>effectScope 作用演示</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h2>effectScope 演示</h2>
+        
+        <h3>1. 没有 effectScope 的情况</h3>
+        <div>计数: {{ count }}</div>
+        <button @click="count++">增加</button>
+        <button @click="stopEffects">停止所有效果</button>
+        
+        <h3>2. 使用 effectScope 的情况</h3>
+        <div>作用域计数: {{ scopedCount }}</div>
+        <button @click="scopedCount++">增加</button>
+        <button @click="stopScope">停止作用域</button>
+        
+        <h3>3. 嵌套 effectScope</h3>
+        <div>嵌套计数: {{ nestedCount }}</div>
+        <button @click="nestedCount++">增加</button>
+        <button @click="stopNestedScope">停止嵌套作用域</button>
+        
+        <div style="margin-top: 20px; padding: 10px; background: #f0f0f0;">
+            <h4>控制台输出说明：</h4>
+            <p>• 点击"增加"按钮会触发 watchEffect</p>
+            <p>• 点击"停止"按钮会停止对应的响应式效果</p>
+            <p>• 停止后，再点击"增加"按钮不会触发 watchEffect</p>
+        </div>
+    </div>
+
+    <script>
+        const { ref, watchEffect, effectScope, createApp } = Vue;
+
+        createApp({
+            setup() {
+                const count = ref(0);
+                const scopedCount = ref(0);
+                const nestedCount = ref(0);
+                
+                let stopEffects = null;
+                let scope = null;
+                let nestedScope = null;
+
+                // 1. 没有 effectScope - 全局效果
+                const effect1 = watchEffect(() => {
+                    console.log('全局效果 - count 变化:', count.value);
+                });
+                
+                const effect2 = watchEffect(() => {
+                    console.log('全局效果 - count 的平方:', count.value * count.value);
+                });
+
+                stopEffects = () => {
+                    console.log('停止所有全局效果');
+                    effect1(); // 停止第一个效果
+                    effect2(); // 停止第二个效果
+                };
+
+                // 2. 使用 effectScope - 作用域效果
+                scope = effectScope();
+                
+                scope.run(() => {
+                    watchEffect(() => {
+                        console.log('作用域效果 - scopedCount 变化:', scopedCount.value);
+                    });
+                    
+                    watchEffect(() => {
+                        console.log('作用域效果 - scopedCount 的平方:', scopedCount.value * scopedCount.value);
+                    });
+                });
+
+                const stopScope = () => {
+                    console.log('停止作用域效果');
+                    scope.stop(); // 停止整个作用域内的所有效果
+                };
+
+                // 3. 嵌套 effectScope
+                nestedScope = effectScope();
+                
+                nestedScope.run(() => {
+                    watchEffect(() => {
+                        console.log('嵌套作用域效果 - nestedCount 变化:', nestedCount.value);
+                    });
+                    
+                    // 在作用域内创建另一个作用域
+                    const innerScope = effectScope();
+                    innerScope.run(() => {
+                        watchEffect(() => {
+                            console.log('内层作用域效果 - nestedCount 的立方:', nestedCount.value * nestedCount.value * nestedCount.value);
+                        });
+                    });
+                    
+                    // 停止内层作用域
+                    setTimeout(() => {
+                        console.log('停止内层作用域');
+                        innerScope.stop();
+                    }, 5000);
+                });
+
+                const stopNestedScope = () => {
+                    console.log('停止嵌套作用域效果');
+                    nestedScope.stop(); // 停止整个嵌套作用域
+                };
+
+                return {
+                    count,
+                    scopedCount,
+                    nestedCount,
+                    stopEffects,
+                    stopScope,
+                    stopNestedScope
+                };
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2, h3, h4 {
+            color: #333;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        div {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html> 
