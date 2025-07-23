@@ -1,20 +1,6 @@
 /** 数组去重 */
-const arr = [
-  1,
-  7,
-  7,
-  NaN,
-  NaN,
-  null,
-  null,
-  undefined,
-  undefined,
-  "1",
-  "1",
-  true,
-  true,
-  { a: 1 },
-  { a: 1 },
+const arr = [ 1, 7, 7, NaN, NaN, null, null, undefined, undefined, 
+  "1", "1", true, true, { a: 1 }, { a: 1 },
 ];
 /**
  * set
@@ -23,8 +9,6 @@ const arr = [
 function unique(arr) {
   return [...new Set(arr)];
 }
-console.log(unique(arr));
-
 /**
  * filter + indexOf  只找第一次出现的
  * indexOf 内部用的是严格相等（===）来判断元素是否相等
@@ -34,8 +18,6 @@ console.log(unique(arr));
 function unique1(arr) {
   return arr.filter((item, index) => arr.indexOf(item) === index);
 }
-console.log(unique1(arr));
-
 /**
  * Map
  * 无法去重对象
@@ -59,9 +41,6 @@ function unique3(arr) {
     return false;
   });
 }
-// console.log(unique2(arr));
-// console.log(unique3(arr));
-
 /** map 根据 key 进行对象去重 */
 function unique4(arr, key) {
   let map = new Map();
@@ -79,9 +58,6 @@ function unique4(arr, key) {
     return false;
   });
 }
-
-console.log(unique4(arr, "a"));
-
 /** 
  * reduce 
  * 可以去重 NaN
@@ -93,5 +69,3 @@ function unique6(arr) {
     []
   );
 }
-
-console.log(unique6(arr,'unique6'));

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="text" id="input" />
+
+    <script>
+      function myDebounce(fn, delay, immediate = false, cb) {
+        let timer = null;
+        /** 判断是防抖还是立即执行模式 */
+        let isInvoke = false;
+        function _debounce(...args) {
+          if (timer) clearTimeout(timer);
+          if (immediate && !isInvoke) {
+            const res = fn.apply(this, args);
+            if (cb) cb(res);
+
+            isInvoke = true;
+          } else {
+            timer = setTimeout(() => {
+              const res = fn.apply(this, args);
+              if (cb) cb(res);
+              isInvoke = false;
+            }, delay);
+          }
+        }
+        _debounce.cancel = function () {
+          if (timer) clearTimeout(timer);
+          isInvoke = false;
+          timer = null;
+        };
+
+        return _debounce;
+      }
+
+      function myThrottle(
+        fn,
+        delay,
+        options = { leading: true, trailing: true }
+      ) {
+        let lastTime = 0;
+        let timer = null;
+        const _throttle = function (...args) {
+          let nowTime = new Date().getTime();
+
+          /** 第一次是否执行 */
+          if (!lastTime && !leading) lastTime = nowTime;
+          let remainTime = delay(nowTime - lastTime);
+          if (remainTime <= 0) {
+            if (timer) {
+              clearTimeout(timer);
+              timer = null;
+            }
+            fn.apply(this, args);
+            lastTime = nowTime;
+          }
+        };
+
+        if (trailing && !timer) {
+          timer = setTimeout(() => {
+            fn.apply(this, args);
+          }, remainTime);
+        }
+        return _throttle;
+      }
+
+      let input = document.getElementById("input");
+      input.oninput = myDebounce(
+        function (e) {
+          console.log(e.target.value);
+        },
+        2000,
+        true
+      );
+      //   input.oninput = function (e) {
+      //     console.log(e.target.value);
+      //   };
+    </script>
+  </body>
+</html>
